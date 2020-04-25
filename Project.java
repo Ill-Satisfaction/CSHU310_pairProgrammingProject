@@ -175,6 +175,58 @@ public class Project{
         //TODO
     }
 
+    private static void modify(String query) throws ClassNotFoundException, SQLException, InstantiationException, IllegalAccessException{
+        Connection con = null;
+        Statement stmt = null;
+        try {
+            Class.forName("com.mysql.cj.jdbc.Driver");
+            con = DriverManager.getConnection("jdbc:mysql://localhost:56115/test?verifyServerCertificate=false&useSSL=true&serverTimezone=UTC", "msandbox",
+            "whitemocha");
+
+            con.setAutoCommit(false);
+            stmt = con.createStatement();
+            int res = stmt.executeUpdate(query);
+            con.commit();
+        } catch (SQLException e){
+            System.out.println(e.getMessage());
+            con.rollback();
+        } finally {
+            if (stmt != null){
+                stmt.close();
+            }
+
+            con.setAutoCommit(true);
+            con.close();
+        }
+    }
+
+    private static void read(String query) throws ClassNotFoundException, SQLException, InstantiationException, IllegalAccessException{
+        Connection con = null;
+        Statement stmt = null;
+        try {
+            Class.forName("com.mysql.cj.jdbc.Driver");
+            con = DriverManager.getConnection("jdbc:mysql://localhost:56115/test?verifyServerCertificate=false&useSSL=true&serverTimezone=UTC", "msandbox",
+            "whitemocha");
+
+            con.setAutoCommit(false);
+            stmt = con.createStatement();
+            ResultSet resultSet = stmt.executeQuery(query);
+            ResultSetMetaData rsmd = resultSet.getMetaData();
+            int columnsNumber = rsmd.getColumnCount();
+            //while... see line 71 of test.java
+        } catch (SQLException e){
+            System.out.println(e.getMessage());
+            con.rollback();
+        } finally {
+            if (stmt != null){
+                stmt.close();
+            }
+
+            con.setAutoCommit(true);
+            con.close();
+        }
+    }
+
     private static void printUsage(){
         System.out.println("Invalid arguments. Usage:");
         System.out.println("\tProject CreateItem <itemCode> <itemDescription> <price>");
