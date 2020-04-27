@@ -104,15 +104,60 @@ public class Project{
     }
 
     private static void createItem(String itemCode, String itemDescription, String price){
-        //TODO
+        try {
+            Integer.parseInt(itemCode);
+            Double.parseDouble(price);
+        } catch (Exception e) {
+            printUsage();
+        }
+
+        String query = "INSERT INTO Item(ItemCode, ItemDescription, Price) " +
+        "VALUES ('" + itemCode + "', '" + itemDescription + "', '" + price + "')";
+
+        try {
+            modify(query);
+        } catch (Exception e) {
+            System.out.println(e.getMessage());
+        }
     }
 
     private static void createPurchase(String itemCode, String purchaseQuantity){
-        //TODO
+        try {
+            Integer.parseInt(itemCode);
+            Integer.parseInt(purchaseQuantity);
+        } catch (Exception e) {
+            printUsage();
+        }
+
+        String query = "INSERT INTO Purchase(ItemCode, PurchaseQuantity) " +
+        "VALUES ('" + itemCode + "', '" + purchaseQuantity + "')";
+
+        try {
+            modify(query);
+        } catch (Exception e) {
+            System.out.println(e.getMessage());
+        }
     }
 
     private static void createShipment(String itemCode, String shipmentQuantity, String shipmentDate){
-        //TODO
+        try {
+            Integer.parseInt(itemCode);
+            Integer.parseInt(shipmentQuantity);
+
+        } catch (Exception e) {
+            printUsage();
+        }
+
+        // TODO: verify date format?
+
+        String query = "INSERT INTO Shipment(ItemCode, ShipmentQuantity, ShipmentDate) " +
+        "VALUES ('" + itemCode + "', '" + shipmentQuantity + "', '" + shipmentDate + "')";
+
+        try {
+            modify(query);
+        } catch (Exception e) {
+            System.out.println(e.getMessage());
+        }
     }
 
     private static String getItems(String itemCode){
@@ -180,7 +225,7 @@ public class Project{
         Statement stmt = null;
         try {
             Class.forName("com.mysql.cj.jdbc.Driver");
-            con = DriverManager.getConnection("jdbc:mysql://localhost:56115/test?verifyServerCertificate=false&useSSL=true&serverTimezone=UTC", "msandbox",
+            con = DriverManager.getConnection("jdbc:mysql://localhost:56115/final?verifyServerCertificate=false&useSSL=true&serverTimezone=UTC", "msandbox",
             "whitemocha");
 
             con.setAutoCommit(false);
@@ -205,7 +250,7 @@ public class Project{
         Statement stmt = null;
         try {
             Class.forName("com.mysql.cj.jdbc.Driver");
-            con = DriverManager.getConnection("jdbc:mysql://localhost:56115/test?verifyServerCertificate=false&useSSL=true&serverTimezone=UTC", "msandbox",
+            con = DriverManager.getConnection("jdbc:mysql://localhost:56115/final?verifyServerCertificate=false&useSSL=true&serverTimezone=UTC", "msandbox",
             "whitemocha");
 
             con.setAutoCommit(false);
