@@ -97,7 +97,6 @@ public class Project{
 
                 default:
                     printUsage();
-
             }
         } else {
             printUsage();
@@ -241,6 +240,7 @@ public class Project{
 
             con.setAutoCommit(false);
             stmt = con.createStatement();
+
             int res = stmt.executeUpdate(query);
             con.commit();
         } catch (SQLException e){
@@ -267,6 +267,7 @@ public class Project{
 
             con.setAutoCommit(false);
             stmt = con.createStatement();
+            
             resultSet = stmt.executeQuery(query);
             // ResultSetMetaData rsmd = resultSet.getMetaData();
             // int columnsNumber = rsmd.getColumnCount();
