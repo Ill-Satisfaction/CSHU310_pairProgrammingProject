@@ -111,8 +111,9 @@ public class Project{
             printUsage();
         }
 
-        String query = "INSERT INTO Item(ItemCode, ItemDescription, Price) " +
-        "VALUES ('" + itemCode + "', '" + itemDescription + "', '" + price + "')";
+        String query = "CALL createItem ('" + itemCode + "', '" + itemDescription + "', '" + price + "')";
+
+        
 
         try {
             modify(query);
@@ -121,6 +122,7 @@ public class Project{
         }
     }
 
+    //me
     private static void createPurchase(String itemCode, String purchaseQuantity){
         try {
             Integer.parseInt(itemCode);
@@ -138,7 +140,7 @@ public class Project{
             System.out.println(e.getMessage());
         }
     }
-
+    //me
     private static void createShipment(String itemCode, String shipmentQuantity, String shipmentDate){
         try {
             Integer.parseInt(itemCode);
@@ -160,33 +162,23 @@ public class Project{
         }
     }
 
-    private static String getItems(String itemCode)
+    private static void getItems(String itemCode)
             throws ClassNotFoundException, InstantiationException, IllegalAccessException, SQLException {
-        //TODO
-        String retVal = "";
-
-        try {
-            Integer.parseInt(itemCode);
-        } catch (Exception e) {
-            printUsage();
-        }
 
         if (itemCode.equals("%")){
-
+            read("SELECT * FROM Item;");
         } else {
-            retVal = read("SELECT * FROM Item;").toString();
-
+            read("SELECT * FROM Item WHERE ItemCode = '" + itemCode + "';");
         }
-
-        return retVal;
     }
 
-    private static String getShipments(String itemCode){
+    private static String getShipments(String itemCode)
+            throws ClassNotFoundException, InstantiationException, IllegalAccessException, SQLException {
         //TODO
         if (itemCode.equals("%")){
-
+            read("SELECT * FROM Shipment;");
         } else {
-            
+            read("SELECT * FROM Shipment WHERE ItemID = '" + itemCode + "';");
         }
 
         return "";
@@ -202,7 +194,7 @@ public class Project{
 
         return "";
     }
-
+    // me
     private static String itemsAvaliable(String itemCode){
         //TODO
         if (itemCode.equals("%")){
@@ -269,9 +261,20 @@ public class Project{
             stmt = con.createStatement();
             
             resultSet = stmt.executeQuery(query);
-            // ResultSetMetaData rsmd = resultSet.getMetaData();
-            // int columnsNumber = rsmd.getColumnCount();
-            // while... see line 71 of test.java
+
+            ResultSetMetaData rsmd = resultSet.getMetaData();
+            int columnsNumber = rsmd.getColumnCount();
+
+            // Prints to stdout
+            while (resultSet.next()) {
+                for (int i = 1; i <= columnsNumber; i++) {
+                    if (i > 1) System.out.print(",  ");
+                    String columnValue = resultSet.getString(i);
+                    System.out.print(columnValue + " " + rsmd.getColumnName(i));
+                }
+                System.out.println(" ");
+            }
+            
         } catch (SQLException e){
             System.out.println(e.getMessage());
             con.rollback();
