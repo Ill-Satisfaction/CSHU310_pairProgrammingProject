@@ -3,7 +3,8 @@ import java.sql.*;
 import java.util.*;
 
 public class Project{
-    public static void main(String[] args) {
+    public static void main(String[] args)
+            throws ClassNotFoundException, InstantiationException, IllegalAccessException, SQLException {
         if (args.length >= 1){
             switch (args[0]){
                 case "CreateItem":
@@ -160,15 +161,25 @@ public class Project{
         }
     }
 
-    private static String getItems(String itemCode){
+    private static String getItems(String itemCode)
+            throws ClassNotFoundException, InstantiationException, IllegalAccessException, SQLException {
         //TODO
+        String retVal = "";
+
+        try {
+            Integer.parseInt(itemCode);
+        } catch (Exception e) {
+            printUsage();
+        }
+
         if (itemCode.equals("%")){
 
         } else {
+            retVal = read("SELECT * FROM Item;").toString();
 
         }
 
-        return "";
+        return retVal;
     }
 
     private static String getShipments(String itemCode){
@@ -245,9 +256,10 @@ public class Project{
         }
     }
 
-    private static void read(String query) throws ClassNotFoundException, SQLException, InstantiationException, IllegalAccessException{
+    private static ResultSet read(String query) throws ClassNotFoundException, SQLException, InstantiationException, IllegalAccessException{
         Connection con = null;
         Statement stmt = null;
+        ResultSet resultSet = null;
         try {
             Class.forName("com.mysql.cj.jdbc.Driver");
             con = DriverManager.getConnection("jdbc:mysql://localhost:56115/final?verifyServerCertificate=false&useSSL=true&serverTimezone=UTC", "msandbox",
@@ -255,10 +267,10 @@ public class Project{
 
             con.setAutoCommit(false);
             stmt = con.createStatement();
-            ResultSet resultSet = stmt.executeQuery(query);
-            ResultSetMetaData rsmd = resultSet.getMetaData();
-            int columnsNumber = rsmd.getColumnCount();
-            //while... see line 71 of test.java
+            resultSet = stmt.executeQuery(query);
+            // ResultSetMetaData rsmd = resultSet.getMetaData();
+            // int columnsNumber = rsmd.getColumnCount();
+            // while... see line 71 of test.java
         } catch (SQLException e){
             System.out.println(e.getMessage());
             con.rollback();
@@ -270,6 +282,7 @@ public class Project{
             con.setAutoCommit(true);
             con.close();
         }
+        return resultSet;
     }
 
     private static void printUsage(){
