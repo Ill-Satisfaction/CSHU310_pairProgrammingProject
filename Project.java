@@ -210,8 +210,9 @@ public class Project{
         //TODO
     }
 
-    private static void deleteItem(String itemCode){
-        //TODO
+    private static void deleteItem(String itemCode) throws ClassNotFoundException, InstantiationException, IllegalAccessException, SQLException {
+        read("CALL checkDeleteItem ('" + itemCode + "')");
+        modify("CALL deleteItem ('" + itemCode + "')");
     }
 
     private static void deleteShipment(String itemCode){
