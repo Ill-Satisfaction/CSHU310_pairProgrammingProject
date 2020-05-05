@@ -49,6 +49,7 @@ left join Purchase p on i.ID = p.ItemID
 where i.ItemCode = itemCode AND (s.ID IS NOT NULL or p.ID IS NOT NULL);
 END $$
 
+DELIMITER $$
 CREATE PROCEDURE deleteItem (
 IN itemCode VARCHAR(10)
 )

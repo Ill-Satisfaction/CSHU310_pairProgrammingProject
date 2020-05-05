@@ -103,44 +103,85 @@ public class Project{
         }
     }
 
-    private static void createItem(String itemCode, String itemDescription, String price){
+    private static void createItem(String itemCode, String itemDescription, String price) throws SQLException,
+            ClassNotFoundException {
+        Double dPrice = 0.00;
+
         try {
-            Integer.parseInt(itemCode);
-            Double.parseDouble(price);
+            dPrice = Double.parseDouble(price);
         } catch (Exception e) {
             printUsage();
         }
 
-        String query = "CALL createItem ('" + itemCode + "', '" + itemDescription + "', '" + price + "')";
-
-        
-
+        Connection con = null;
+        PreparedStatement stmt = null;
         try {
-            modify(query);
-        } catch (Exception e) {
+            Class.forName("com.mysql.cj.jdbc.Driver");
+            con = DriverManager.getConnection("jdbc:mysql://localhost:56115/final?verifyServerCertificate=false&useSSL=true&serverTimezone=UTC", "msandbox",
+            "whitemocha");
+
+            con.setAutoCommit(false);
+            stmt = con.prepareStatement("Call createItem(?, ?, ?)");
+            stmt.setString(1, itemCode);
+            stmt.setString(2, itemDescription);
+            stmt.setDouble(3, dPrice);
+
+            int res = stmt.executeUpdate();
+            System.out.println(res + " records inserted.");
+            con.commit();
+        } catch (SQLException e){
             System.out.println(e.getMessage());
+            con.rollback();
+        } finally {
+            if (stmt != null){
+                stmt.close();
+            }
+
+            con.setAutoCommit(true);
+            con.close();
         }
     }
 
     //me
-    private static void createPurchase(String itemCode, String purchaseQuantity){
+    private static void createPurchase(String itemID, String purchaseQuantity) throws SQLException, ClassNotFoundException {
+        int iID = 0;
+        int iQuantity = 0;
+
         try {
-            Integer.parseInt(itemCode);
-            Integer.parseInt(purchaseQuantity);
+            iID = Integer.parseInt(itemID);
+            iQuantity = Integer.parseInt(purchaseQuantity);
         } catch (Exception e) {
             printUsage();
         }
 
-        String query = "INSERT INTO Purchase(ItemCode, PurchaseQuantity) " +
-        "VALUES ('" + itemCode + "', '" + purchaseQuantity + "')";
-
+        Connection con = null;
+        PreparedStatement stmt = null;
         try {
-            modify(query);
-        } catch (Exception e) {
+            Class.forName("com.mysql.cj.jdbc.Driver");
+            con = DriverManager.getConnection("jdbc:mysql://localhost:56115/final?verifyServerCertificate=false&useSSL=true&serverTimezone=UTC", "msandbox",
+            "whitemocha");
+
+            con.setAutoCommit(false);
+            stmt = con.prepareStatement("Call createPurchase(?, ?)");
+            stmt.setInt(1, iID);
+            stmt.setInt(2, iQuantity);
+
+            int res = stmt.executeUpdate();
+            System.out.println(res + " records inserted.");
+            con.commit();
+        } catch (SQLException e){
             System.out.println(e.getMessage());
+            con.rollback();
+        } finally {
+            if (stmt != null){
+                stmt.close();
+            }
+
+            con.setAutoCommit(true);
+            con.close();
         }
     }
-    //me
+    
     private static void createShipment(String itemCode, String shipmentQuantity, String shipmentDate){
         try {
             Integer.parseInt(itemCode);
@@ -162,13 +203,82 @@ public class Project{
         }
     }
 
-    private static void getItems(String itemCode)
-            throws ClassNotFoundException, InstantiationException, IllegalAccessException, SQLException {
+    private static void getItems(String itemCode) throws ClassNotFoundException, InstantiationException, IllegalAccessException, SQLException {
+
+        Connection con = null;
+        ResultSet resultSet = null;
+        PreparedStatement stmt = null;
 
         if (itemCode.equals("%")){
-            read("SELECT * FROM Item;");
+            try {
+                Class.forName("com.mysql.cj.jdbc.Driver");
+                con = DriverManager.getConnection("jdbc:mysql://localhost:56115/final?verifyServerCertificate=false&useSSL=true&serverTimezone=UTC", "msandbox",
+                "whitemocha");
+
+                con.setAutoCommit(false);
+                stmt = con.prepareStatement("SELECT * From Item");
+                resultSet = stmt.executeQuery();
+
+                ResultSetMetaData rsmd = resultSet.getMetaData();
+                int columnsNumber = rsmd.getColumnCount();
+
+                // Prints to stdout
+                while (resultSet.next()) {
+                    for (int i = 1; i <= columnsNumber; i++) {
+                        if (i > 1) System.out.print(",  ");
+                        String columnValue = resultSet.getString(i);
+                        System.out.print(columnValue + " " + rsmd.getColumnName(i));
+                    }
+                    System.out.println(" ");
+                }
+            
+            } catch (SQLException e){
+                System.out.println(e.getMessage());
+                con.rollback();
+            } finally {
+                if (stmt != null){
+                    stmt.close();
+                }
+
+                con.setAutoCommit(true);
+                con.close();
+            }
         } else {
-            read("SELECT * FROM Item WHERE ItemCode = '" + itemCode + "';");
+            try {
+                Class.forName("com.mysql.cj.jdbc.Driver");
+                con = DriverManager.getConnection("jdbc:mysql://localhost:56115/final?verifyServerCertificate=false&useSSL=true&serverTimezone=UTC", "msandbox",
+                "whitemocha");
+
+                con.setAutoCommit(false);
+                stmt = con.prepareStatement("SELECT * FROM Item WHERE ItemCode = ?");
+                stmt.setString(1, itemCode);
+                
+                resultSet = stmt.executeQuery();
+
+                ResultSetMetaData rsmd = resultSet.getMetaData();
+                int columnsNumber = rsmd.getColumnCount();
+
+                // Prints to stdout
+                while (resultSet.next()) {
+                    for (int i = 1; i <= columnsNumber; i++) {
+                        if (i > 1) System.out.print(",  ");
+                        String columnValue = resultSet.getString(i);
+                        System.out.print(columnValue + " " + rsmd.getColumnName(i));
+                    }
+                    System.out.println(" ");
+                }
+            
+            } catch (SQLException e){
+                System.out.println(e.getMessage());
+                con.rollback();
+            } finally {
+                if (stmt != null){
+                    stmt.close();
+                }
+
+                con.setAutoCommit(true);
+                con.close();
+            }
         }
     }
 
@@ -176,7 +286,7 @@ public class Project{
             throws ClassNotFoundException, InstantiationException, IllegalAccessException, SQLException {
         //TODO
         if (itemCode.equals("%")){
-            read("SELECT * FROM Shipment;");
+
         } else {
             read("SELECT * FROM Shipment WHERE ItemID = '" + itemCode + "';");
         }
@@ -212,7 +322,7 @@ public class Project{
 
     private static void deleteItem(String itemCode) throws ClassNotFoundException, InstantiationException, IllegalAccessException, SQLException {
         read("CALL checkDeleteItem ('" + itemCode + "')");
-        modify("CALL deleteItem ('" + itemCode + "')");
+        //modify("CALL deleteItem ('" + itemCode + "')");
     }
 
     private static void deleteShipment(String itemCode){
