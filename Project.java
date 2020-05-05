@@ -3,8 +3,8 @@ import java.sql.*;
 import java.util.*;
 
 public class Project{
-    public static void main(String[] args)
-            throws ClassNotFoundException, InstantiationException, IllegalAccessException, SQLException {
+    public static void main(String[] args) throws ClassNotFoundException, InstantiationException, IllegalAccessException, SQLException {
+        Class.forName("com.mysql.cj.jdbc.Driver");
         if (args.length >= 1){
             switch (args[0]){
                 case "CreateItem":
@@ -103,8 +103,7 @@ public class Project{
         }
     }
 
-    private static void createItem(String itemCode, String itemDescription, String price) throws SQLException,
-            ClassNotFoundException {
+    private static void createItem(String itemCode, String itemDescription, String price) throws SQLException, ClassNotFoundException {
         Double dPrice = 0.00;
 
         try {
@@ -116,11 +115,9 @@ public class Project{
         Connection con = null;
         PreparedStatement stmt = null;
         try {
-            Class.forName("com.mysql.cj.jdbc.Driver");
-            con = DriverManager.getConnection("jdbc:mysql://localhost:56115/final?verifyServerCertificate=false&useSSL=true&serverTimezone=UTC", "msandbox",
-            "whitemocha");
-
+            con = DriverManager.getConnection("jdbc:mysql://localhost:56115/final?verifyServerCertificate=false&useSSL=true&serverTimezone=UTC", "msandbox", "whitemocha");
             con.setAutoCommit(false);
+
             stmt = con.prepareStatement("Call createItem(?, ?, ?)");
             stmt.setString(1, itemCode);
             stmt.setString(2, itemDescription);
@@ -136,13 +133,11 @@ public class Project{
             if (stmt != null){
                 stmt.close();
             }
-
             con.setAutoCommit(true);
             con.close();
         }
     }
 
-    //me
     private static void createPurchase(String itemID, String purchaseQuantity) throws SQLException, ClassNotFoundException {
         int iID = 0;
         int iQuantity = 0;
@@ -157,7 +152,6 @@ public class Project{
         Connection con = null;
         PreparedStatement stmt = null;
         try {
-            Class.forName("com.mysql.cj.jdbc.Driver");
             con = DriverManager.getConnection("jdbc:mysql://localhost:56115/final?verifyServerCertificate=false&useSSL=true&serverTimezone=UTC", "msandbox",
             "whitemocha");
 
@@ -197,7 +191,7 @@ public class Project{
         "VALUES ('" + itemCode + "', '" + shipmentQuantity + "', '" + shipmentDate + "')";
 
         try {
-            modify(query);
+            //modify(query);
         } catch (Exception e) {
             System.out.println(e.getMessage());
         }
@@ -211,7 +205,6 @@ public class Project{
 
         if (itemCode.equals("%")){
             try {
-                Class.forName("com.mysql.cj.jdbc.Driver");
                 con = DriverManager.getConnection("jdbc:mysql://localhost:56115/final?verifyServerCertificate=false&useSSL=true&serverTimezone=UTC", "msandbox",
                 "whitemocha");
 
@@ -275,7 +268,6 @@ public class Project{
                 if (stmt != null){
                     stmt.close();
                 }
-
                 con.setAutoCommit(true);
                 con.close();
             }
@@ -288,7 +280,7 @@ public class Project{
         if (itemCode.equals("%")){
 
         } else {
-            read("SELECT * FROM Shipment WHERE ItemID = '" + itemCode + "';");
+            //read("SELECT * FROM Shipment WHERE ItemID = '" + itemCode + "';");
         }
 
         return "";
@@ -321,7 +313,7 @@ public class Project{
     }
 
     private static void deleteItem(String itemCode) throws ClassNotFoundException, InstantiationException, IllegalAccessException, SQLException {
-        read("CALL checkDeleteItem ('" + itemCode + "')");
+        //read("CALL checkDeleteItem ('" + itemCode + "')");
         //modify("CALL deleteItem ('" + itemCode + "')");
     }
 
@@ -331,73 +323,6 @@ public class Project{
 
     private static void deletePurchase(String itemCode){
         //TODO
-    }
-
-    private static void modify(String query) throws ClassNotFoundException, SQLException, InstantiationException, IllegalAccessException{
-        Connection con = null;
-        Statement stmt = null;
-        try {
-            Class.forName("com.mysql.cj.jdbc.Driver");
-            con = DriverManager.getConnection("jdbc:mysql://localhost:56115/final?verifyServerCertificate=false&useSSL=true&serverTimezone=UTC", "msandbox",
-            "whitemocha");
-
-            con.setAutoCommit(false);
-            stmt = con.createStatement();
-
-            int res = stmt.executeUpdate(query);
-            con.commit();
-        } catch (SQLException e){
-            System.out.println(e.getMessage());
-            con.rollback();
-        } finally {
-            if (stmt != null){
-                stmt.close();
-            }
-
-            con.setAutoCommit(true);
-            con.close();
-        }
-    }
-
-    private static ResultSet read(String query) throws ClassNotFoundException, SQLException, InstantiationException, IllegalAccessException{
-        Connection con = null;
-        Statement stmt = null;
-        ResultSet resultSet = null;
-        try {
-            Class.forName("com.mysql.cj.jdbc.Driver");
-            con = DriverManager.getConnection("jdbc:mysql://localhost:56115/final?verifyServerCertificate=false&useSSL=true&serverTimezone=UTC", "msandbox",
-            "whitemocha");
-
-            con.setAutoCommit(false);
-            stmt = con.createStatement();
-            
-            resultSet = stmt.executeQuery(query);
-
-            ResultSetMetaData rsmd = resultSet.getMetaData();
-            int columnsNumber = rsmd.getColumnCount();
-
-            // Prints to stdout
-            while (resultSet.next()) {
-                for (int i = 1; i <= columnsNumber; i++) {
-                    if (i > 1) System.out.print(",  ");
-                    String columnValue = resultSet.getString(i);
-                    System.out.print(columnValue + " " + rsmd.getColumnName(i));
-                }
-                System.out.println(" ");
-            }
-            
-        } catch (SQLException e){
-            System.out.println(e.getMessage());
-            con.rollback();
-        } finally {
-            if (stmt != null){
-                stmt.close();
-            }
-
-            con.setAutoCommit(true);
-            con.close();
-        }
-        return resultSet;
     }
 
     private static void printUsage(){
