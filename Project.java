@@ -369,19 +369,6 @@ public class Project{
         //TODO
     }
 
-    private static void deleteItem(String itemCode) throws ClassNotFoundException, InstantiationException, IllegalAccessException, SQLException {
-        //read("CALL checkDeleteItem ('" + itemCode + "')");
-        //modify("CALL deleteItem ('" + itemCode + "')");
-    }
-
-    private static void deleteShipment(String itemCode){
-        //TODO
-    }
-
-    private static void deletePurchase(String itemCode){
-        //TODO
-    }
-
     private static void printUsage(){
         System.out.println("Invalid arguments. Usage:");
         System.out.println("\tProject CreateItem <itemCode> <itemDescription> <price>");
