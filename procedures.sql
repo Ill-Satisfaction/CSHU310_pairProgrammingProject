@@ -1,10 +1,6 @@
 --createItem
 DELIMITER $$
-CREATE PROCEDURE createItem( 
-IN itemCode VARCHAR(10), 
-IN itemDesc VARCHAR(50),
-IN price DECIMAL(4,2)
-)
+CREATE PROCEDURE createItem(IN itemCode VARCHAR(10), IN itemDesc VARCHAR(50), IN price DECIMAL(4,2))
 BEGIN
 INSERT INTO Item (ItemCode, ItemDescription, Price)
 VALUES (itemCode, itemDesc, price);
@@ -12,25 +8,18 @@ END $$
 
 --createPurchase
 DELIMITER $$
-CREATE PROCEDURE createPurchase( 
-IN id INT, 
-IN quan INT
-)
+CREATE PROCEDURE createPurchase(IN iCode VARCHAR(10), IN quan INT)
 BEGIN
 INSERT INTO Purchase (ItemID, Quantity)
-VALUES (id, quan);
+VALUES ((SELECT DISTINCT Item.ID FROM Item WHERE Item.ItemCode = iCode), quan);
 END $$
 
 --createShipment
 DELIMITER $$
-CREATE PROCEDURE createShipment( 
-IN itemID INT, 
-IN itemQuantity INT,
-IN shipmentDate DATE
-)
+CREATE PROCEDURE createShipment(IN itemCode VARCHAR(10), IN itemQuantity INT,IN shipmentDate DATE)
 BEGIN
 INSERT INTO Shipment (ItemID, Quantity, ShipmentDate)
-VALUES (itemCode, itemQuantity, shipmentDate);
+VALUES ((SELECT DISTINCT Item.ID FROM Item WHERE Item.ItemCode = itemCode), itemQuantity, shipmentDate);
 END $$
 
 --deleteItem
@@ -59,4 +48,33 @@ FROM Item i
 LEFT JOIN Shipment s on i.ID = s.ItemID 
 LEFT JOIN Purchase p on i.ID = p.ItemID
 WHERE ItemCode = itemCode AND s.ID IS NULL AND p.ID IS NULL;
+END $$
+
+-- itemsAvailableOne
+DELIMITER $$
+CREATE PROCEDURE itemsAvailableOne(IN itemCode VARCHAR(10))
+BEGIN
+SELECT i.ItemCode, i.ItemDescription,
+SUM(IFNULL(s.Quantity, 0) - IFNULL(p.Quantity, 0)) AS ItemsAvailable
+FROM Item i
+LEFT JOIN Shipment s
+	ON i.ID = s.ItemID
+LEFT JOIN Purchase p
+	ON i.ID = p.ItemID
+WHERE ItemCode = itemCode
+GROUP BY i.ItemCode;
+END $$
+
+-- itemsAvailableAll
+DELIMITER $$
+CREATE PROCEDURE itemsAvailableAll()
+BEGIN
+SELECT i.ItemCode, i.ItemDescription, 
+SUM(IFNULL(s.Quantity, 0) - IFNULL(p.Quantity,0)) AS ItemsAvailable
+FROM Item i
+LEFT JOIN Shipment s
+	ON i.ID = s.ItemID
+LEFT JOIN Purchase p
+	ON i.ID = p.ItemID
+GROUP BY i.ItemCode;
 END $$

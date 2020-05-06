@@ -140,12 +140,10 @@ public class Project{
         }
     }
 
-    private static void createPurchase(String itemID, String purchaseQuantity) throws SQLException, ClassNotFoundException {
-        int iID = 0;
+    private static void createPurchase(String itemCode, String purchaseQuantity) throws SQLException, ClassNotFoundException {
         int iQuantity = 0;
 
         try {
-            iID = Integer.parseInt(itemID);
             iQuantity = Integer.parseInt(purchaseQuantity);
         } catch (Exception e) {
             printUsage();
@@ -159,7 +157,7 @@ public class Project{
 
             con.setAutoCommit(false);
             stmt = con.prepareStatement("Call createPurchase(?, ?)");
-            stmt.setInt(1, iID);
+            stmt.setString(1, itemCode);
             stmt.setInt(2, iQuantity);
 
             int res = stmt.executeUpdate();
@@ -446,12 +444,78 @@ public class Project{
         }
     }
 
-    private static void itemsAvaliable(String itemCode){
-        //TODO
+    private static void itemsAvaliable(String itemCode) throws SQLException {
+        Connection con = null;
+        ResultSet resultSet = null;
+        PreparedStatement stmt = null;
+        
         if (itemCode.equals("%")){
+            try {
+                con = DriverManager.getConnection("jdbc:mysql://localhost:56115/final?verifyServerCertificate=false&useSSL=true&serverTimezone=UTC", "msandbox",
+                "whitemocha");
 
-        } else {
+                con.setAutoCommit(false);
+                stmt = con.prepareStatement("CALL itemsAvailableAll()");
+                resultSet = stmt.executeQuery();
+
+                ResultSetMetaData rsmd = resultSet.getMetaData();
+                int columnsNumber = rsmd.getColumnCount();
+
+                // Prints to stdout
+                while (resultSet.next()) {
+                    for (int i = 1; i <= columnsNumber; i++) {
+                        if (i > 1) System.out.print(",  ");
+                        String columnValue = resultSet.getString(i);
+                        System.out.print(columnValue + " " + rsmd.getColumnName(i));
+                    }
+                    System.out.println(" ");
+                }
             
+            } catch (SQLException e){
+                System.out.println(e.getMessage());
+                con.rollback();
+            } finally {
+                if (stmt != null){
+                    stmt.close();
+                }
+
+                con.setAutoCommit(true);
+                con.close();
+            }
+        } else {
+            try {
+                con = DriverManager.getConnection("jdbc:mysql://localhost:56115/final?verifyServerCertificate=false&useSSL=true&serverTimezone=UTC", "msandbox",
+                "whitemocha");
+
+                con.setAutoCommit(false);
+                stmt = con.prepareStatement("CALL itemsAvailableOne(?)");
+                stmt.setString(1, itemCode);
+                
+                resultSet = stmt.executeQuery();
+
+                ResultSetMetaData rsmd = resultSet.getMetaData();
+                int columnsNumber = rsmd.getColumnCount();
+
+                // Prints to stdout
+                while (resultSet.next()) {
+                    for (int i = 1; i <= columnsNumber; i++) {
+                        if (i > 1) System.out.print(",  ");
+                        String columnValue = resultSet.getString(i);
+                        System.out.print(columnValue + " " + rsmd.getColumnName(i));
+                    }
+                    System.out.println(" ");
+                }
+            
+            } catch (SQLException e){
+                System.out.println(e.getMessage());
+                con.rollback();
+            } finally {
+                if (stmt != null){
+                    stmt.close();
+                }
+                con.setAutoCommit(true);
+                con.close();
+            }
         }
     }
 
