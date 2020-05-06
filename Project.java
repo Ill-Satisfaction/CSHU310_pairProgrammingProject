@@ -34,24 +34,10 @@ public class Project{
                     break;
 
                 case "GetItems":
-                    if (args.length == 2){
-                        getItems(args[1]);
-                    } else {
-                        printUsage();
-                    }
-                    break;
-
                 case "GetShipments":
-                    if (args.length == 2){
-                        getShipments(args[1]);
-                    } else {
-                        printUsage();
-                    }
-                    break;
-
                 case "GetPurchases":
                     if (args.length == 2){
-                        getPurchases(args[1]);
+                        readFromTable(args);
                     } else {
                         printUsage();
                     }
@@ -74,24 +60,10 @@ public class Project{
                     break;
 
                 case "DeleteItem":
-                    if (args.length == 2){
-                        deleteItem(args[1]);
-                    } else {
-                        printUsage();
-                    }
-                    break;
-
                 case "DeleteShipment":
-                    if (args.length == 2){
-                        deleteShipment(args[1]);
-                    } else {
-                        printUsage();
-                    }
-                    break;
-
                 case "DeletePurchase":
                     if (args.length == 2){
-                        deletePurchase(args[1]);
+                        purgeFromTable(args);
                     } else {
                         printUsage();
                     }
@@ -102,6 +74,106 @@ public class Project{
             }
         } else {
             printUsage();
+        }
+    }
+
+
+
+
+
+
+    // METHODS
+
+    private static void readFromTable(String[] a) {
+
+        String url  = "jdbc:mysql://localhost:56115/final?verifyServerCertificate=false&useSSL=true&serverTimezone=UTC"
+        String usr  = "msandbox"
+        String pass = "whitemocha"
+
+        Boolean connectionValid = false;
+        Connection con = null;
+        ResultSet resultSet = null;
+        PreparedStatement stmt = null;
+
+        try {
+            // get connection
+            con = DriverManager.getConnection(url, usr, pass);
+            con.setAutoCommit(false);
+
+            stmt = con.prepareStatement("Call ?(?);");
+            stmt.setString(1, a[0].equals("GetItems") ? "getItems" : a[0].equals("GetShipments") ? "getShipments" : a[0].equals("GetPurchases") ? "getPurchases" : "checkDeleteItem");
+            stmt.setString(2, a[1]);
+
+            //execute
+            resultSet = stmt.executeQuery();
+
+            //print to stdout
+            int colsNum = resultSet.getMetaData().getColumnCount();
+            while (resultSet.next()) {
+                for (int i=1; i<=colsNum; i++) {
+                    if (i>1) System.out.print(", ");
+                    String colsVal = resultSet.getString(i);
+                    System.out.print(colsVal + " " + rsmd.getColumnName(i));
+                }
+                System.out.println(" ");
+            }
+
+            //close statement
+            if (stmt != null) stmt.close();
+            stmt = null;
+
+        } catch (SQLException e) {
+            System.out.println(e.getMessage());
+            con.rollback();
+            connectionValid = false;
+
+        } finally {
+            // close connection
+            con.setAutoCommit(true);
+            con.close();
+        }
+    }
+
+    private static void purgeFromTable(String[] a) {
+
+        String url  = "jdbc:mysql://localhost:56115/final?verifyServerCertificate=false&useSSL=true&serverTimezone=UTC"
+        String usr  = "msandbox"
+        String pass = "whitemocha"
+
+        Boolean connectionValid = false;
+        Connection con = null;
+        ResultSet resultSet = null;
+        PreparedStatement stmt = null;
+
+        try {
+            // get connection
+            con = DriverManager.getConnection(url, usr, pass);
+            con.setAutoCommit(false);
+
+            if (a[0].equals("DeleteItem")) readFromTable(new String[]{"", a[1]});
+            stmt = con.prepareStatement("Call ?(?);");
+            stmt.setString(1, a[0].equals("DeleteItem") ? "deleteItem" : a[0].equals("DeleteShipment") ? "deleteShipment" : "deletePurchase");
+            stmt.setString(2, a[1]);
+
+            //execure
+            resultSet = stmt.executeQuery();
+
+            //print to stdout
+            System.out.println(res + " records deleted.");
+
+            //close statement
+            if (stmt != null) stmt.close();
+            stmt = null;
+
+        } catch (SQLException e) {
+            System.out.println(e.getMessage());
+            con.rollback();
+            connectionValid = false;
+
+        } finally {
+            // close connection
+            con.setAutoCommit(true);
+            con.close();
         }
     }
 
@@ -215,232 +287,6 @@ public class Project{
 
             con.setAutoCommit(true);
             con.close();
-        }
-    }
-
-    private static void getItems(String itemCode) throws SQLException {
-
-        Connection con = null;
-        ResultSet resultSet = null;
-        PreparedStatement stmt = null;
-
-        if (itemCode.equals("%")){
-            try {
-                con = DriverManager.getConnection("jdbc:mysql://localhost:56115/final?verifyServerCertificate=false&useSSL=true&serverTimezone=UTC", "msandbox",
-                "whitemocha");
-
-                con.setAutoCommit(false);
-                stmt = con.prepareStatement("SELECT * From Item");
-                resultSet = stmt.executeQuery();
-
-                ResultSetMetaData rsmd = resultSet.getMetaData();
-                int columnsNumber = rsmd.getColumnCount();
-
-                // Prints to stdout
-                while (resultSet.next()) {
-                    for (int i = 1; i <= columnsNumber; i++) {
-                        if (i > 1) System.out.print(",  ");
-                        String columnValue = resultSet.getString(i);
-                        System.out.print(columnValue + " " + rsmd.getColumnName(i));
-                    }
-                    System.out.println(" ");
-                }
-            
-            } catch (SQLException e){
-                System.out.println(e.getMessage());
-                con.rollback();
-            } finally {
-                if (stmt != null){
-                    stmt.close();
-                }
-
-                con.setAutoCommit(true);
-                con.close();
-            }
-        } else {
-            try {
-                con = DriverManager.getConnection("jdbc:mysql://localhost:56115/final?verifyServerCertificate=false&useSSL=true&serverTimezone=UTC", "msandbox",
-                "whitemocha");
-
-                con.setAutoCommit(false);
-                stmt = con.prepareStatement("SELECT * FROM Item WHERE ItemCode = ?");
-                stmt.setString(1, itemCode);
-                
-                resultSet = stmt.executeQuery();
-
-                ResultSetMetaData rsmd = resultSet.getMetaData();
-                int columnsNumber = rsmd.getColumnCount();
-
-                // Prints to stdout
-                while (resultSet.next()) {
-                    for (int i = 1; i <= columnsNumber; i++) {
-                        if (i > 1) System.out.print(",  ");
-                        String columnValue = resultSet.getString(i);
-                        System.out.print(columnValue + " " + rsmd.getColumnName(i));
-                    }
-                    System.out.println(" ");
-                }
-            
-            } catch (SQLException e){
-                System.out.println(e.getMessage());
-                con.rollback();
-            } finally {
-                if (stmt != null){
-                    stmt.close();
-                }
-                con.setAutoCommit(true);
-                con.close();
-            }
-        }
-    }
-
-    private static void getShipments(String itemCode) throws SQLException {
-        Connection con = null;
-        ResultSet resultSet = null;
-        PreparedStatement stmt = null;
-
-        if (itemCode.equals("%")){
-            try {
-                con = DriverManager.getConnection("jdbc:mysql://localhost:56115/final?verifyServerCertificate=false&useSSL=true&serverTimezone=UTC", "msandbox",
-                "whitemocha");
-
-                con.setAutoCommit(false);
-                stmt = con.prepareStatement("SELECT * From Shipment");
-                resultSet = stmt.executeQuery();
-
-                ResultSetMetaData rsmd = resultSet.getMetaData();
-                int columnsNumber = rsmd.getColumnCount();
-
-                // Prints to stdout
-                while (resultSet.next()) {
-                    for (int i = 1; i <= columnsNumber; i++) {
-                        if (i > 1) System.out.print(",  ");
-                        String columnValue = resultSet.getString(i);
-                        System.out.print(columnValue + " " + rsmd.getColumnName(i));
-                    }
-                    System.out.println(" ");
-                }
-            
-            } catch (SQLException e){
-                System.out.println(e.getMessage());
-                con.rollback();
-            } finally {
-                if (stmt != null){
-                    stmt.close();
-                }
-
-                con.setAutoCommit(true);
-                con.close();
-            }
-        } else {
-            try {
-                con = DriverManager.getConnection("jdbc:mysql://localhost:56115/final?verifyServerCertificate=false&useSSL=true&serverTimezone=UTC", "msandbox",
-                "whitemocha");
-
-                con.setAutoCommit(false);
-                stmt = con.prepareStatement("SELECT * FROM Shipment WHERE ItemID = ?");
-                stmt.setString(1, itemCode);
-                
-                resultSet = stmt.executeQuery();
-
-                ResultSetMetaData rsmd = resultSet.getMetaData();
-                int columnsNumber = rsmd.getColumnCount();
-
-                // Prints to stdout
-                while (resultSet.next()) {
-                    for (int i = 1; i <= columnsNumber; i++) {
-                        if (i > 1) System.out.print(",  ");
-                        String columnValue = resultSet.getString(i);
-                        System.out.print(columnValue + " " + rsmd.getColumnName(i));
-                    }
-                    System.out.println(" ");
-                }
-            
-            } catch (SQLException e){
-                System.out.println(e.getMessage());
-                con.rollback();
-            } finally {
-                if (stmt != null){
-                    stmt.close();
-                }
-                con.setAutoCommit(true);
-                con.close();
-            }
-        }
-    }
-
-    private static void getPurchases(String itemCode) throws SQLException {
-        Connection con = null;
-        ResultSet resultSet = null;
-        PreparedStatement stmt = null;
-        
-        if (itemCode.equals("%")){
-            try {
-                con = DriverManager.getConnection("jdbc:mysql://localhost:56115/final?verifyServerCertificate=false&useSSL=true&serverTimezone=UTC", "msandbox",
-                "whitemocha");
-
-                con.setAutoCommit(false);
-                stmt = con.prepareStatement("SELECT * From Purchase");
-                resultSet = stmt.executeQuery();
-
-                ResultSetMetaData rsmd = resultSet.getMetaData();
-                int columnsNumber = rsmd.getColumnCount();
-
-                // Prints to stdout
-                while (resultSet.next()) {
-                    for (int i = 1; i <= columnsNumber; i++) {
-                        if (i > 1) System.out.print(",  ");
-                        String columnValue = resultSet.getString(i);
-                        System.out.print(columnValue + " " + rsmd.getColumnName(i));
-                    }
-                    System.out.println(" ");
-                }
-            
-            } catch (SQLException e){
-                System.out.println(e.getMessage());
-                con.rollback();
-            } finally {
-                if (stmt != null){
-                    stmt.close();
-                }
-
-                con.setAutoCommit(true);
-                con.close();
-            }
-        } else {
-            try {
-                con = DriverManager.getConnection("jdbc:mysql://localhost:56115/final?verifyServerCertificate=false&useSSL=true&serverTimezone=UTC", "msandbox",
-                "whitemocha");
-
-                con.setAutoCommit(false);
-                stmt = con.prepareStatement("SELECT * FROM Purchase WHERE ItemID = ?");
-                stmt.setString(1, itemCode);
-                
-                resultSet = stmt.executeQuery();
-
-                ResultSetMetaData rsmd = resultSet.getMetaData();
-                int columnsNumber = rsmd.getColumnCount();
-
-                // Prints to stdout
-                while (resultSet.next()) {
-                    for (int i = 1; i <= columnsNumber; i++) {
-                        if (i > 1) System.out.print(",  ");
-                        String columnValue = resultSet.getString(i);
-                        System.out.print(columnValue + " " + rsmd.getColumnName(i));
-                    }
-                    System.out.println(" ");
-                }
-            
-            } catch (SQLException e){
-                System.out.println(e.getMessage());
-                con.rollback();
-            } finally {
-                if (stmt != null){
-                    stmt.close();
-                }
-                con.setAutoCommit(true);
-                con.close();
-            }
         }
     }
 
